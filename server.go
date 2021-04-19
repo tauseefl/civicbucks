@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"syscall"
-	"time"
 	"encoding/json"
-	"sync"
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"log"
+	"net/http"
+	"sync"
+	"syscall"
+	"time"
 )
 
 var mutex = &sync.Mutex{}
@@ -67,11 +67,11 @@ func shutdownServer(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getTimeofLastBucks() float64{
+func getTimeofLastBucks() float64 {
 	mutex.Lock()
 	var result = getMiningResults()
 	mutex.Unlock()
-	if len(result)>1{
+	if len(result) > 1 {
 		return float64(result[len(result)-1].time)
 	}
 	return 0.0
@@ -79,12 +79,12 @@ func getTimeofLastBucks() float64{
 
 var (
 	histogram = prometheus.NewHistogram(
-	   prometheus.HistogramOpts{
-		  Namespace: "golang",
-		  Name:      "my_histogram",
-		  Help:      "This is my histogram",
-	   })
-  )
+		prometheus.HistogramOpts{
+			Namespace: "golang",
+			Name:      "my_histogram",
+			Help:      "This is my histogram",
+		})
+)
 
 func civicServer() {
 
@@ -99,14 +99,14 @@ func civicServer() {
 
 	//Registering the defined metric with Prometheus
 	//TODO: Complete with actual numbers
-  	prometheus.MustRegister(histogram)
+	prometheus.MustRegister(histogram)
 
 	go func() {
 		for {
-		   histogram.Observe(getTimeofLastBucks())
-		   time.Sleep(time.Second)
+			histogram.Observe(getTimeofLastBucks())
+			time.Sleep(time.Second)
 		}
-	 }()
+	}()
 
 	go func() {
 		log.Fatal(http.ListenAndServe(":8081", nil))
