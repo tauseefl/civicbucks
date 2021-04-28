@@ -2,7 +2,11 @@ package main
 
 import (
 	"errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
+	// "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"time"
 )
 
 // ComputeResult stores the result on palindrome calculation and the time it took
@@ -11,6 +15,14 @@ type ComputeResult struct {
 	binary string
 	time   int
 }
+
+var (
+	Palindrome_temp *prometheus.HistogramVec = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "Palindrome",
+		Help:    "help",
+		Buckets: prometheus.DefBuckets,
+	}, []string{"base"})
+)
 
 // MinerSingle executes the palindrome computations one at a time
 func MinerSingle(number int) (ComputeResult, error) {
@@ -29,6 +41,15 @@ func MinerSingle(number int) (ComputeResult, error) {
 
 func isPalindrome(number int) bool {
 	// converts int into string and then check if the string is a palindrome
+
+	defer func(begin time.Time) {
+
+		s := time.Since(begin).Seconds()
+		ms := s * 1e3
+		Palindrome_temp.WithLabelValues("Ten").Observe(ms)
+
+	}(time.Now())
+
 	forwardString := strconv.Itoa(number)
 	reversedString := reverse(forwardString)
 
@@ -37,6 +58,15 @@ func isPalindrome(number int) bool {
 
 func isBinaryPalindrome(number int) bool {
 	// converts int into a string of binary and then check if the string is a palindrome
+
+	defer func(begin time.Time) {
+
+		s := time.Since(begin).Seconds()
+		ms := s * 1e3
+		Palindrome_temp.WithLabelValues("Two").Observe(ms)
+
+	}(time.Now())
+
 	forwardBinaryString := convertToBinary(number)
 	reversedBinaryString := reverse(forwardBinaryString)
 
