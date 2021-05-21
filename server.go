@@ -30,7 +30,7 @@ func civicCounter(w http.ResponseWriter, r *http.Request) {
 	parseDataS.Total = len(result)
 
 	for i := 0; i < len(result); i++ {
-		parseDataS.Palindromes = append(parseDataS.Palindromes, result[i].number)
+		parseDataS.Palindromes = append(parseDataS.Palindromes, result[i].Number)
 	}
 
 	b, _ := json.Marshal(parseDataS)

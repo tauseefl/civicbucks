@@ -71,11 +71,11 @@ func main() {
 
 func printSortedList(result []ComputeResult) {
 	sort.Slice(result[:], func(i, j int) bool {
-		return result[i].number < result[j].number
+		return result[i].Number < result[j].Number
 	})
 
 	for i := 0; i < len(result); i++ {
-		fmt.Printf("%v \t binary: %v \t\n", result[i].number, result[i].binary)
+		fmt.Printf("%v \t binary: %v \t\n", result[i].Number, result[i].Binary)
 	}
 }
 
@@ -88,9 +88,9 @@ func printResultPerformance(result []ComputeResult) {
 	}
 
 	for i := range result {
-		total = total + result[i].time
-		if result[i].time > max {
-			max = result[i].time
+		total = total + result[i].Time
+		if result[i].Time > max {
+			max = result[i].Time
 		}
 	}
 

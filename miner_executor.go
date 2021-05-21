@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	// "log"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -42,16 +46,44 @@ func MinerExecutor(startBlock int, endBlock int, timeout int, threads int, timeo
 		// Print out for debugging threads
 		// fmt.Printf("\nThread %v starting at block %v and ending at block %v", i, routineStart, routineEnd)
 
+		// go func(routineStart int, routineEnd int, threadNumber int) {
+		// 	defer wg.Done()
+		// 	for j := routineStart; j < routineEnd; j++ {
+		// 		start := time.Now()
+		// 		result, err := MinerSingle(j)
+		// 		elapsed := time.Since(start)
+		// 		if err == nil {
+		// 			result.time = int(elapsed.Nanoseconds())
+		// 			mu.Lock()
+		// 			allResults = append(allResults, result)
+		// 			GlobalResults = allResults
+		// 			mu.Unlock()
+		// 		}
+		// 	}
+		// }(routineStart, routineEnd, i)
+
+		// Server, not local cpu
 		go func(routineStart int, routineEnd int, threadNumber int) {
 			defer wg.Done()
 			for j := routineStart; j < routineEnd; j++ {
-				start := time.Now()
-				result, err := MinerSingle(j)
-				elapsed := time.Since(start)
+
+				postBody, _ := json.Marshal(map[string]int{
+					"numNum": j,
+				 })
+				responseBody := bytes.NewBuffer(postBody)
+				result, err := http.Post("http://localhost:8082/MinerSingle", "application/json", responseBody)
+
+				test_num := ComputeResult{}
+
+				if err != nil {
+					// do something
+				}
+
+				err = json.NewDecoder(result.Body).Decode(&test_num)
+
 				if err == nil {
-					result.time = int(elapsed.Nanoseconds())
 					mu.Lock()
-					allResults = append(allResults, result)
+					allResults = append(allResults, test_num)
 					GlobalResults = allResults
 					mu.Unlock()
 				}
