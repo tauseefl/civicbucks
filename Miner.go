@@ -11,9 +11,9 @@ import (
 
 // ComputeResult stores the result on palindrome calculation and the time it took
 type ComputeResult struct {
-	number int
-	binary string
-	time   int
+	Number int
+	Binary string
+	Time   int
 }
 
 var (
@@ -31,8 +31,8 @@ func MinerSingle(number int) (ComputeResult, error) {
 
 	if isPalindrome(number) {
 		if isBinaryPalindrome(number) {
-			output.number = number
-			output.binary = convertToBinary(number)
+			output.Number = number
+			output.Binary = convertToBinary(number)
 			return output, nil
 		}
 	}
