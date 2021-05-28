@@ -4,13 +4,14 @@ import (
 	"errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
-	// "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"time"
 	"net/http"
 	"fmt"
 	"log"
 	"encoding/json"
+	"sync"
 )
 
 // ComputeResult stores the result on palindrome calculation and the time it took
@@ -90,8 +91,11 @@ func convertToBinary(i int) string {
 	return strconv.FormatInt(i64, 2) // base 2 for binary
 }
 
-func handle_miner(w http.ResponseWriter, r *http.Request){
+type NumNum struct {
+    Block int `json:"block"`
+}
 
+func handle_single_miner(w http.ResponseWriter, r *http.Request){
 	test_num := NumNum{}
 
 	err := json.NewDecoder(r.Body).Decode(&test_num)
@@ -100,7 +104,7 @@ func handle_miner(w http.ResponseWriter, r *http.Request){
     }
 
 	start := time.Now()
-	result, err := MinerSingle(test_num.NumNum)
+	result, err := MinerSingle(test_num.Block)
 	elapsed := time.Since(start)
 	result.Time = int(elapsed.Nanoseconds())
 
@@ -115,8 +119,41 @@ func handle_miner(w http.ResponseWriter, r *http.Request){
   	w.Write(js)
 }
 
-type NumNum struct {
-    NumNum int `json:"numNum"`
+type NumNumNum struct {
+    StartBlock int `json:"startBlock"`
+	EndBlock int `json:"EndBlock"`
+}
+
+func handle_block_miner(w http.ResponseWriter, r *http.Request){
+	test_num := NumNumNum{}
+
+	err := json.NewDecoder(r.Body).Decode(&test_num)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+    }
+
+	var allResults []ComputeResult
+	var mu = &sync.Mutex{}
+	
+	for i := test_num.StartBlock; i < test_num.EndBlock; i++{
+		start := time.Now()
+		result, err := MinerSingle(i)
+		elapsed := time.Since(start)
+		result.Time = int(elapsed.Nanoseconds())
+
+		if err != nil {
+			continue
+		}
+		timed_result := ComputeResult{result.Number, result.Binary, result.Time}
+		mu.Lock()
+		allResults = append(allResults, timed_result)
+		mu.Unlock()
+	}
+
+	js, _ := json.Marshal(allResults)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+
 }
 
 func HelloServer(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +164,9 @@ func main(){
 
 	// Create default route handler
 	http.HandleFunc("/", HelloServer)
-	http.HandleFunc("/MinerSingle", handle_miner)
+	http.HandleFunc("/MinerSingle", handle_single_miner)
+	http.HandleFunc("/MinerBlock", handle_block_miner)
+	http.Handle("/metrics", promhttp.Handler())
 
 	log.Fatal(http.ListenAndServe(":8082", nil))
 }
