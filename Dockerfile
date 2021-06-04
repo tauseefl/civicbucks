@@ -24,4 +24,4 @@ RUN go build -o main .
 EXPOSE 8081
 
 # Run the executable
-ENTRYPOINT ["./main", "-start=1", "-end=10241490900", "-override=true"]
+ENTRYPOINT ["./main", "-start=1", "-end=10241"]

@@ -45,7 +45,7 @@ func MinerExecutor(startBlock int, endBlock int, timeout int, threads int, timeo
 
 		// Print out for debugging threads
 		// fmt.Printf("\nThread %v starting at block %v and ending at block %v", i, routineStart, routineEnd)
-		
+
 		// // Use local computations
 		// go func(routineStart int, routineEnd int, threadNumber int) {
 		// 	defer wg.Done()
@@ -62,14 +62,14 @@ func MinerExecutor(startBlock int, endBlock int, timeout int, threads int, timeo
 		// 		}
 		// 	}
 		// }(routineStart, routineEnd, i)
-		
+
 		// Call server, for each number
 		go func(routineStart int, routineEnd int, threadNumber int) {
 			defer wg.Done()
 			for j := routineStart; j < routineEnd; j++ {
 				postBody, _ := json.Marshal(map[string]int{
 					"block": j,
-				 })
+				})
 				responseBody := bytes.NewBuffer(postBody)
 				result, err := http.Post("http://localhost:8082/MinerSingle", "application/json", responseBody)
 
@@ -91,35 +91,35 @@ func MinerExecutor(startBlock int, endBlock int, timeout int, threads int, timeo
 			}
 		}(routineStart, routineEnd, i)
 
-	// 	// Call server using blocks of numbers
-	// 	go func(routineStart int, routineEnd int, threadNumber int) {
-	// 		defer wg.Done()
-	// 		postBody, _ := json.Marshal(map[string]int{
-	// 			"startBlock": routineStart,
-	// 			"endBlock": routineEnd,
-	// 		 })
-	// 		responseBody := bytes.NewBuffer(postBody)
-	// 		result, err := http.Post("http://localhost:8082/MinerBlock", "application/json", responseBody)
+		// 	// Call server using blocks of numbers
+		// 	go func(routineStart int, routineEnd int, threadNumber int) {
+		// 		defer wg.Done()
+		// 		postBody, _ := json.Marshal(map[string]int{
+		// 			"startBlock": routineStart,
+		// 			"endBlock": routineEnd,
+		// 		 })
+		// 		responseBody := bytes.NewBuffer(postBody)
+		// 		result, err := http.Post("http://localhost:8082/MinerBlock", "application/json", responseBody)
 
-	// 		if err != nil {
-	// 			// do something
-	// 		}
-			
-	// 		mu.Lock()
-	// 		test_num := []ComputeResult{}
-	// 		err = json.NewDecoder(result.Body).Decode(&test_num)
-	// 		mu.Unlock()
+		// 		if err != nil {
+		// 			// do something
+		// 		}
 
-	// 		if err == nil {
-	// 			mu.Lock()
-	// 			for _, element := range test_num {
-	// 				allResults = append(allResults, element)
-	// 			}
-				
-	// 			GlobalResults = allResults
-	// 			mu.Unlock()
-	// 		}
-	// 	}(routineStart, routineEnd, i)
+		// 		mu.Lock()
+		// 		test_num := []ComputeResult{}
+		// 		err = json.NewDecoder(result.Body).Decode(&test_num)
+		// 		mu.Unlock()
+
+		// 		if err == nil {
+		// 			mu.Lock()
+		// 			for _, element := range test_num {
+		// 				allResults = append(allResults, element)
+		// 			}
+
+		// 			GlobalResults = allResults
+		// 			mu.Unlock()
+		// 		}
+		// 	}(routineStart, routineEnd, i)
 
 		routineStart = routineEnd + 1
 	}
